@@ -1,0 +1,112 @@
+#include "defs.h"
+#include <netdb.h>
+ #include <sys/types.h>
+    #include <sys/socket.h>
+    #include <netinet/in.h>
+    #include <arpa/inet.h>
+    #include <unistd.h>
+    #define INVALID_SOCKET -1
+    #define SOCKET_ERROR -1
+    #define closesocket(s) close(s)
+    
+#define PORT 2048
+
+typedef int SOCKET;
+typedef struct sockaddr_in SOCKADDR_IN;
+typedef struct sockaddr SOCKADDR;
+typedef struct in_addr IN_ADDR;
+
+
+/* Put your functions here */
+
+/* Main Function */
+int main(int argc, char **argv) {
+  //if(argc != 4) {
+   // printf("Erreur sur le nombre d'arguments\nLa commande a cette forme : ./client <IPserv> <TCPserv> <UDPserv>\n");
+   // return -1;
+  //}
+  /* Put your code here */
+
+
+//////////////////////////Declaration variables///////////////////////////////////////////////////////////////////
+
+
+SOCKET sock = socket(AF_INET, SOCK_STREAM, 0);
+char buffer[1024];
+int n = 0;
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////Creation du socket///////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+if(sock == INVALID_SOCKET)
+{
+    perror("socket()");
+    exit(errno);
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////Connexion au serveur//////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+struct hostent*  hostinfo = NULL;
+SOCKADDR_IN sin = { 0 }; /* initialise la structure avec des 0 */
+const char *hostname = "localhost";
+
+hostinfo = gethostbyname(hostname); /* on récupère les informations de l'hôte auquel on veut se connecter */
+
+if (hostinfo == NULL) /* l'hôte n'existe pas */
+{
+    fprintf (stderr, "Unknown host %s.\n", hostname);
+    exit(EXIT_FAILURE);
+}
+
+sin.sin_addr = *(IN_ADDR *) hostinfo->h_addr; /* l'adresse se trouve dans le champ h_addr de la structure hostinfo */
+sin.sin_port = htons(PORT); /* on utilise htons pour le port */
+sin.sin_family = AF_INET;
+
+if(connect(sock,(SOCKADDR *) &sin, sizeof(SOCKADDR)) == SOCKET_ERROR)
+{
+    perror("connect()");
+    exit(errno);
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////Envoi et reception//////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+if(send(sock, buffer, strlen(buffer), 0) < 0)
+{
+    perror("send()");
+    exit(errno);
+}
+
+
+if((n = recv(sock, buffer, sizeof buffer - 1, 0)) < 0)
+{
+    perror("recv()");
+    exit(errno);
+}
+
+
+    char message[10];
+    //for (;;){
+        scanf("%s",message);
+        printf("%s",message);
+    //}
+
+buffer[n] = '\0';
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////Fermeture serveur//////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+closesocket(sock);
+
+
+
+
+return 0;
+}
